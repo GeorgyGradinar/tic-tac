@@ -1,36 +1,44 @@
 <template>
-  <section>
+  <section class="game">
     <h1>Tic-Tac-toe</h1>
 
-    <div class="wrapper-block--choose-game">
-      <label class="container">
-        <input type="radio" checked="checked" name="radio" value="one" v-model="chooseKindGame">
-        Player vs Computer
-      </label>
-      <label class="container">
-        <input type="radio" name="radio" value="two" v-model="chooseKindGame">
-        Player vs Player
-      </label>
+    <v-btn @click="restart()" class="button-restart">Restart</v-btn>
+
+    <div class="inform">
+      <span>Computer - <span class="selectedComputer">o</span></span>
+
+      <span>You - <span class="selectedUser">x</span></span>
+
     </div>
-
-    <v-btn @click="restart()">Restart</v-btn>
-
     <div id="game-board">
       <div class="box"
            v-for="(quad, index) in 9" :key="quad.id"
            @click="selectBlock(index)"
+           v-text="checkSelected(index)"
            :class="{
-           selectedUser: checkSelectedUser(index),
-           selectedComputer: checkSelectedComputer(index)}">
+           selectedUser: checkSelected(index) === 'x',
+           selectedComputer: checkSelected(index)=== 'o'}">
       </div>
     </div>
 
-    <h1 v-if="winner">Winner: {{ winner }}</h1>
+    <h1 v-if="winner" class="winner"
+        :class="{
+        'winner-user': winner === 'You',
+        'winner-computer': winner === 'Computer',
+        'winner-draw': winner === 'DRAW' }"
+    >Winner: {{ winner }}</h1>
   </section>
+
+  <section class="answer">
+    <answers></answers>
+  </section>
+
 
 </template>
 
 <script>
+
+import answers from "@/components/answers";
 
 const WINNING_COMBINATION = [
   [0, 1, 2],
@@ -47,12 +55,14 @@ const WINNING_COMBINATION = [
 export default {
 
   name: 'HelloWorld',
+  components: {answers},
   props: {},
 
   data() {
     return {
       isActiveBoard: true,
       winner: '',
+      winnerCombination: [],
       selectedBlocksUser: [],
       selectedBlocksComputer: [],
       userUsingCombination: WINNING_COMBINATION,
@@ -81,12 +91,14 @@ export default {
       this.handelSelection(event);
     },
 
-    checkSelectedUser(id) {
-      return this.selectedBlocksUser.includes(id);
-    },
-
-    checkSelectedComputer(id) {
-      return this.selectedBlocksComputer.includes(id);
+    checkSelected(id) {
+      if (this.selectedBlocksUser.includes(id)) {
+        return 'x'
+      } else if (this.selectedBlocksComputer.includes(id)) {
+        return 'o'
+      } else {
+        return ''
+      }
     },
 
     handelSelection(idButton) {
@@ -104,9 +116,9 @@ export default {
       if (!this.winner) {
         let selectCombinate = selectedMethodForComputer || selectedMethodForUser || this.computerUsingCombination[0];
         this.isActiveBoard = false;
-        setTimeout(()=>{
+        setTimeout(() => {
           this.selectBlockComputer(selectCombinate);
-          this.checkWinner(selectedMethodForComputer, 'computer');
+          this.checkWinner(selectedMethodForComputer, 'Computer');
           this.isActiveBoard = true;
         }, 500)
 
@@ -118,7 +130,7 @@ export default {
         let countSelectBlockUser = this.selectedBlocksUser.filter(idBlock => method.includes(idBlock));
 
         if (countSelectBlockUser.length === 3) {
-          this.checkWinner(method, 'Player');
+          this.checkWinner(method, 'You');
           return method;
         } else if (countSelectBlockUser.length === 2) {
           return !this.selectedBlocksComputer.some(el => method.includes(el));
@@ -148,23 +160,23 @@ export default {
     selectBlockComputer(selectCombinate) {
       this.isActiveBoard = false;
       try {
-          selectCombinate.some(id => {
-            if (!this.selectedBlocksComputer.includes(id) && !this.selectedBlocksUser.includes(id)) {
-              this.selectedBlocksComputer.push(id);
-              return true;
-            }
-          })
+        selectCombinate.some(id => {
+          if (!this.selectedBlocksComputer.includes(id) && !this.selectedBlocksUser.includes(id)) {
+            this.selectedBlocksComputer.push(id);
+            return true;
+          }
+        })
       } catch {
         this.winner = 'DRAW';
       }
-        this.isActiveBoard = true;
+      this.isActiveBoard = true;
     },
 
     checkWinner(chooseMethod, nameWinner) {
       if (!chooseMethod) {
         return false;
       }
-      let selectedUser = nameWinner === 'computer' ? this.selectedBlocksComputer : this.selectedBlocksUser;
+      let selectedUser = nameWinner === 'Computer' ? this.selectedBlocksComputer : this.selectedBlocksUser;
       let countSelectBlock = selectedUser.filter(idBlock => chooseMethod.includes(idBlock));
       if (countSelectBlock.length === 3) {
         this.winner = nameWinner;
@@ -183,6 +195,15 @@ section {
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  padding: 50px;
+}
+
+.game {
+  background: white;
+}
+
+.answer {
+  background: linear-gradient(0deg, rgba(160, 134, 182, 1) 0%, rgba(108, 33, 170, 1) 100%);
 }
 
 .wrapper-block--choose-game {
@@ -191,22 +212,111 @@ section {
 }
 
 #game-board {
-  width: 300px;
+  width: 450px;
   display: flex;
   flex-wrap: wrap;
+  transition: all 1s linear;
 }
 
 .box {
-  width: 100px;
-  height: 100px;
-  border: 1px coral solid;
+  width: 150px;
+  height: 150px;
+  border: 2px #7B2CBF solid;
+  font-weight: 700;
+  font-size: 80px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 1s linear;
+}
+
+.box:hover {
+  background-color: #f4e8ff;
+}
+
+.button-restart {
+  background-color: #7B2CBF;
+  font-weight: 700;
+  color: white;
+}
+
+.button-restart:hover {
+  background-color: #db3a34;
+}
+
+.inform {
+  display: flex;
+  gap: 50px;
+  font-weight: 700;
+  font-size: 30px;
+  transition: all 1s linear;
 }
 
 .selectedUser {
-  background: red;
+  color: #FF7900;
+  pointer-events: none;
 }
 
 .selectedComputer {
-  background: blue;
+  color: #3C096C;
+  pointer-events: none;
 }
+
+.winner {
+  border-radius: 10px;
+  margin-top: 20px;
+  padding: 0 10px 0 10px;
+  transform: scale(1);
+  animation: pulse 2s infinite;
+}
+
+.winner-user {
+  color: #FF7900;
+  box-shadow: 0 0 0 0 rgb(255, 121, 0);
+}
+
+.winner-computer {
+  color: #3C096C;
+  box-shadow: 0 0 0 0 rgb(60, 9, 108);
+}
+
+.winner-draw {
+  color: #2dc653;
+  box-shadow: 0 0 0 0 rgb(45, 198, 83);
+}
+
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+@media screen and (max-width: 500px) {
+  #game-board{
+    width: 300px;
+  }
+
+  .box{
+    width: 100px;
+    height: 100px;
+    font-size: 60px;
+  }
+
+  .inform{
+    gap: 10px;
+    font-size: 25px;
+  }
+}
+
+
 </style>
