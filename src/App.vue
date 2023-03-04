@@ -1,20 +1,19 @@
 <template>
-  <HelloWorld/>
+  <TicTacToe/>
 </template>
 
 <script>
-import HelloWorld from './components/tic-tac-toe.vue'
+import TicTacToe from './components/tic-tac-toe.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    TicTacToe
   }
 }
 </script>
 
 <style>
-
 * {
   margin: 0;
   padding: 0;

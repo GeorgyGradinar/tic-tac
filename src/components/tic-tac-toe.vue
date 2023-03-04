@@ -5,9 +5,9 @@
     <v-btn @click="restart()" class="button-restart">Restart</v-btn>
 
     <div class="inform">
-      <span>Computer - <span class="selectedComputer">o</span></span>
+      <span>Computer - <span class="selected-computer">{{ MARCKERS.COMPUTER }}</span></span>
 
-      <span>You - <span class="selectedUser">x</span></span>
+      <span>You - <span class="selected-user">{{ MARCKERS.USER }}</span></span>
 
     </div>
     <div id="game-board">
@@ -16,16 +16,16 @@
            @click="selectBlock(index)"
            v-text="checkSelected(index)"
            :class="{
-           selectedUser: checkSelected(index) === 'x',
-           selectedComputer: checkSelected(index)=== 'o'}">
+           'selected-user': checkSelected(index) === MARCKERS.USER,
+           'selected-computer': checkSelected(index)=== MARCKERS.COMPUTER}">
       </div>
     </div>
 
     <h1 v-if="winner" class="winner"
         :class="{
-        'winner-user': winner === 'You',
-        'winner-computer': winner === 'Computer',
-        'winner-draw': winner === 'DRAW' }"
+        'winner-user': winner === WINNERS.USER,
+        'winner-computer': winner === WINNERS.COMPUTER,
+        'winner-draw': winner === WINNERS.NOBODY }"
     >Winner: {{ winner }}</h1>
   </section>
 
@@ -39,23 +39,11 @@
 <script>
 
 import answers from "@/components/answers";
-
-const WINNING_COMBINATION = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-]
-const FIRST_ELEMENT = 0;
-const SECOND_ELEMENT = 2;
+import {ELEMENTS, MARCKERS, WINNERS, WINNING_COMBINATION} from "@/constants";
 
 export default {
 
-  name: 'HelloWorld',
+  name: 'TicTacToe',
   components: {answers},
   props: {},
 
@@ -68,7 +56,8 @@ export default {
       selectedBlocksComputer: [],
       userUsingCombination: WINNING_COMBINATION,
       computerUsingCombination: WINNING_COMBINATION,
-      chooseKindGame: '',
+      MARCKERS,
+      WINNERS
     }
   },
 
@@ -86,7 +75,7 @@ export default {
           || this.selectedBlocksComputer.includes(event)
           || this.winner
           || !this.isActiveBoard) {
-        return false
+        return false;
       }
       this.selectedBlocksUser.push(event);
       this.handelSelection(event);
@@ -94,67 +83,59 @@ export default {
 
     checkSelected(id) {
       if (this.selectedBlocksUser.includes(id)) {
-        return 'x'
-      } else if (this.selectedBlocksComputer.includes(id)) {
-        return 'o'
-      } else {
-        return ''
+        return MARCKERS.USER;
       }
+      return this.selectedBlocksComputer.includes(id) ? MARCKERS.COMPUTER : MARCKERS.UNSELECTED;
     },
 
-    handelSelection(idButton) {
-      this.computerUsingCombination = this.computerUsingCombination.filter(winnerMethod => !winnerMethod.includes(idButton));
-      this.userUsingCombination = WINNING_COMBINATION.filter(winnerMethod => winnerMethod.includes(idButton));
+    handelSelection(buttonId) {
+      this.computerUsingCombination = this.computerUsingCombination.filter(winnerMethod => !winnerMethod.includes(buttonId));
+      this.userUsingCombination = WINNING_COMBINATION.filter(winnerMethod => winnerMethod.includes(buttonId));
 
-      let selectedMethodForUser = undefined;
-      let selectedMethodForComputer = undefined;
+      let selectedMethodForUser;
+      let selectedMethodForComputer;
 
-      if (this.selectedBlocksUser.length >= SECOND_ELEMENT) {
-        selectedMethodForUser = this.findMethodUser();
-        selectedMethodForComputer = this.findMethodComputer();
+      if (this.selectedBlocksUser.length >= ELEMENTS.SECOND) {
+        selectedMethodForUser = this.findUserMethod();
+        selectedMethodForComputer = this.findComputerMethod();
       }
 
       if (!this.winner) {
-        let selectCombinate = selectedMethodForComputer || selectedMethodForUser || this.computerUsingCombination[FIRST_ELEMENT];
+        let selectCombinate = selectedMethodForComputer || selectedMethodForUser || this.computerUsingCombination[ELEMENTS.FIRST];
         this.isActiveBoard = false;
         setTimeout(() => {
           this.selectBlockComputer(selectCombinate);
-          this.checkWinner(selectedMethodForComputer, 'Computer');
+          this.checkWinner(selectedMethodForComputer, WINNERS.COMPUTER);
           this.isActiveBoard = true;
-        }, 500)
+        }, 500);
 
       }
     },
 
-    findMethodUser() {
+    findUserMethod() {
       let selectedMethodForUser = WINNING_COMBINATION.filter(method => {
         let countSelectBlockUser = this.selectedBlocksUser.filter(idBlock => method.includes(idBlock));
-        const third_element = 3;
-        if (countSelectBlockUser.length === third_element) {
-          this.checkWinner(method, 'You');
+        if (countSelectBlockUser.length === ELEMENTS.THIRD) {
+          this.checkWinner(method, WINNERS.USER);
           return method;
-        } else if (countSelectBlockUser.length === SECOND_ELEMENT) {
-          return !this.selectedBlocksComputer.some(el => method.includes(el));
-        } else {
-          return false;
         }
+        return countSelectBlockUser.length === ELEMENTS.SECOND ? !this.selectedBlocksComputer.some(el => method.includes(el)) : false;
       })
 
       if (!this.winner) {
-        return selectedMethodForUser = selectedMethodForUser[FIRST_ELEMENT];
-      } else {
-        return selectedMethodForUser;
+        return selectedMethodForUser = selectedMethodForUser[ELEMENTS.FIRST];
       }
+      return selectedMethodForUser;
+
     },
 
-    findMethodComputer() {
+    findComputerMethod() {
       return this.computerUsingCombination.find(method => {
         let countSelectBlockComputer = this.selectedBlocksComputer.filter(idBlock => method.includes(idBlock));
-        if (countSelectBlockComputer.length === SECOND_ELEMENT) {
+        if (countSelectBlockComputer.length === ELEMENTS.SECOND) {
           return method;
-        } else {
-          return false;
         }
+        return false;
       })
     },
 
@@ -168,7 +149,7 @@ export default {
           }
         })
       } catch {
-        this.winner = 'DRAW';
+        this.winner = WINNERS.NOBODY;
       }
       this.isActiveBoard = true;
     },
@@ -177,9 +158,9 @@ export default {
       if (!chooseMethod) {
         return false;
       }
-      let selectedUser = nameWinner === 'Computer' ? this.selectedBlocksComputer : this.selectedBlocksUser;
+      let selectedUser = nameWinner === WINNERS.COMPUTER ? this.selectedBlocksComputer : this.selectedBlocksUser;
       let countSelectBlock = selectedUser.filter(idBlock => chooseMethod.includes(idBlock));
-      if (countSelectBlock.length === 3) {
+      if (countSelectBlock.length === ELEMENTS.THIRD) {
         this.winner = nameWinner;
       }
     }
@@ -189,6 +170,8 @@ export default {
 </script>
 
 <style scoped>
+@import "@/assets/variables.css";
+
 section {
   width: 100vw;
   display: flex;
@@ -203,7 +186,7 @@ section {
 }
 
 .answer {
-  background: linear-gradient(0deg, rgba(160, 134, 182, 1) 0%, rgba(108, 33, 170, 1) 100%);
+  background: var(--background-gradient);
 }
 
 #game-board {
@@ -216,7 +199,7 @@ section {
 .box {
   width: 150px;
   height: 150px;
-  border: 2px #7B2CBF solid;
+  border: 2px var(--main-color) solid;
   font-weight: 700;
   font-size: 80px;
   text-align: center;
@@ -229,7 +212,7 @@ section {
 }
 
 .button-restart {
-  background-color: #7B2CBF;
+  background-color: var(--main-color);
   font-weight: 700;
   color: white;
 }
@@ -246,13 +229,13 @@ section {
   transition: all 0.3s linear;
 }
 
-.selectedUser {
-  color: #FF7900;
+.selected-user {
+  color: var(--orange);
   pointer-events: none;
 }
 
-.selectedComputer {
-  color: #3C096C;
+.selected-computer {
+  color: var(--main-color);
   pointer-events: none;
 }
 
@@ -265,18 +248,18 @@ section {
 }
 
 .winner-user {
-  color: #FF7900;
-  box-shadow: 0 0 0 0 rgb(255, 121, 0);
+  color: var(--orange);
+  box-shadow: 0 0 0 0 var(--orange);
 }
 
 .winner-computer {
-  color: #3C096C;
-  box-shadow: 0 0 0 0 rgb(60, 9, 108);
+  color: var(--main-color);
+  box-shadow: 0 0 0 0 var(--main-color);
 }
 
 .winner-draw {
-  color: #2dc653;
-  box-shadow: 0 0 0 0 rgb(45, 198, 83);
+  color: var(--green);
+  box-shadow: 0 0 0 0 var(--green);
 }
 
 
@@ -297,25 +280,25 @@ section {
 }
 
 @media screen and (max-width: 500px) {
-  .game{
+  .game {
     margin-bottom: 20px;
   }
 
-  section{
+  section {
     padding: 10px;
   }
 
-  #game-board{
+  #game-board {
     width: 300px;
   }
 
-  .box{
+  .box {
     width: 100px;
     height: 100px;
     font-size: 60px;
   }
 
-  .inform{
+  .inform {
     gap: 10px;
     font-size: 25px;
   }
