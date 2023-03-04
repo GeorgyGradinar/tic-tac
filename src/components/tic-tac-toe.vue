@@ -50,7 +50,8 @@ const WINNING_COMBINATION = [
   [0, 4, 8],
   [2, 4, 6],
 ]
-
+const FIRST_ELEMENT = 0;
+const SECOND_ELEMENT = 2;
 
 export default {
 
@@ -108,13 +109,13 @@ export default {
       let selectedMethodForUser = undefined;
       let selectedMethodForComputer = undefined;
 
-      if (this.selectedBlocksUser.length >= 2) {
+      if (this.selectedBlocksUser.length >= SECOND_ELEMENT) {
         selectedMethodForUser = this.findMethodUser();
         selectedMethodForComputer = this.findMethodComputer();
       }
 
       if (!this.winner) {
-        let selectCombinate = selectedMethodForComputer || selectedMethodForUser || this.computerUsingCombination[0];
+        let selectCombinate = selectedMethodForComputer || selectedMethodForUser || this.computerUsingCombination[FIRST_ELEMENT];
         this.isActiveBoard = false;
         setTimeout(() => {
           this.selectBlockComputer(selectCombinate);
@@ -128,11 +129,11 @@ export default {
     findMethodUser() {
       let selectedMethodForUser = WINNING_COMBINATION.filter(method => {
         let countSelectBlockUser = this.selectedBlocksUser.filter(idBlock => method.includes(idBlock));
-
-        if (countSelectBlockUser.length === 3) {
+        const third_element = 3;
+        if (countSelectBlockUser.length === third_element) {
           this.checkWinner(method, 'You');
           return method;
-        } else if (countSelectBlockUser.length === 2) {
+        } else if (countSelectBlockUser.length === SECOND_ELEMENT) {
           return !this.selectedBlocksComputer.some(el => method.includes(el));
         } else {
           return false;
@@ -140,7 +141,7 @@ export default {
       })
 
       if (!this.winner) {
-        return selectedMethodForUser = selectedMethodForUser[0];
+        return selectedMethodForUser = selectedMethodForUser[FIRST_ELEMENT];
       } else {
         return selectedMethodForUser;
       }
@@ -149,7 +150,7 @@ export default {
     findMethodComputer() {
       return this.computerUsingCombination.find(method => {
         let countSelectBlockComputer = this.selectedBlocksComputer.filter(idBlock => method.includes(idBlock));
-        if (countSelectBlockComputer.length === 2) {
+        if (countSelectBlockComputer.length === SECOND_ELEMENT) {
           return method;
         } else {
           return false;
@@ -187,7 +188,6 @@ export default {
 }
 </script>
 
-
 <style scoped>
 section {
   width: 100vw;
@@ -206,16 +206,11 @@ section {
   background: linear-gradient(0deg, rgba(160, 134, 182, 1) 0%, rgba(108, 33, 170, 1) 100%);
 }
 
-.wrapper-block--choose-game {
-  display: flex;
-  gap: 20px;
-}
-
 #game-board {
   width: 450px;
   display: flex;
   flex-wrap: wrap;
-  transition: all 1s linear;
+  transition: all 0.3s linear;
 }
 
 .box {
@@ -226,7 +221,7 @@ section {
   font-size: 80px;
   text-align: center;
   cursor: pointer;
-  transition: all 1s linear;
+  transition: all 0.3s linear;
 }
 
 .box:hover {
@@ -248,7 +243,7 @@ section {
   gap: 50px;
   font-weight: 700;
   font-size: 30px;
-  transition: all 1s linear;
+  transition: all 0.3s linear;
 }
 
 .selectedUser {
@@ -302,6 +297,14 @@ section {
 }
 
 @media screen and (max-width: 500px) {
+  .game{
+    margin-bottom: 20px;
+  }
+
+  section{
+    padding: 10px;
+  }
+
   #game-board{
     width: 300px;
   }
