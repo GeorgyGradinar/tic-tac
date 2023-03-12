@@ -292,6 +292,4 @@ section {
     font-size: 25px;
   }
 }
-
-
 </style>
