@@ -29,22 +29,15 @@
     >Winner: {{ winner }}</h1>
   </section>
 
-  <section class="answer">
-    <answers></answers>
-  </section>
-
-
 </template>
 
 <script>
 
-import answers from "@/components/answers";
 import {ELEMENTS, MARCKERS, WINNERS, WINNING_COMBINATION} from "@/constants";
 
 export default {
 
   name: 'TicTacToe',
-  components: {answers},
   props: {},
 
   data() {
@@ -183,10 +176,6 @@ section {
 
 .game {
   background: white;
-}
-
-.answer {
-  background: var(--background-gradient);
 }
 
 #game-board {
