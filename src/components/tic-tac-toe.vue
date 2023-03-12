@@ -119,7 +119,6 @@ export default {
         return selectedMethodForUser = selectedMethodForUser[ELEMENTS.FIRST];
       }
       return selectedMethodForUser;
-
     },
 
     findComputerMethod() {
